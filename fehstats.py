@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json, argparse, prettytable
+import json, argparse, prettytable, requests, html
 
 URL_hmdir = "https://s3.us-east-2.amazonaws.com/gamepress-json/fe/"
 URL_3star = URL_hmdir + "heroes-3star.json"
@@ -15,14 +15,34 @@ parser.add_argument('other', nargs='*')
 args = parser.parse_args()
 character, stars, other = args.c, args.s, args.other 
 
+if character: character = character.replace("'", "&#039;").casefold()
+for i in range(len(other)):
+    other[i] = other[i].replace("'", "&#039;").casefold()
+
+# update json files
+if 'update' in other:
+    with open(URL_3star[-10:], 'w') as f3, open(URL_4star[-10:], 'w') as f4, open(URL_5star[-10:], 'w') as f5:
+        f3.write(requests.get(URL_3star).text)
+        f4.write(requests.get(URL_4star).text)
+        f5.write(requests.get(URL_5star).text)
+    print('Json files updated.')
+
 # load json file
 jsondata = None
 filename = stars + "star.json"
 with open(filename, 'r') as f:
     jsondata = json.load(f)
 
+character_list = sorted([hero['title'] for hero in jsondata])
+
+if 'list' in other:
+    for c in character_list: print(html.unescape(c))
+
+tmp = ({c.casefold() for c in character_list} & set(other))
+if tmp: character = tmp.pop()
+if not character: exit()
+
 # adjust keys according to rarity
-# 5stars
 key_hp = 'field_hp_level_1_middle'
 key_atk = 'field_atk_level_1_middle'
 key_spd = 'field_spd_level_1_middle'
@@ -50,8 +70,9 @@ for hero in jsondata:
 if not targethero:
     print("Data not found.")
     exit()
+
 # output
-print("Character:", targethero['title'])
+print("Character:", html.unescape(targethero['title']))
 print("Stars:", stars)
 print("Neutral Stats at Lv.1:")
 t = prettytable.PrettyTable(['HP','ATK','SPD','DEF','RES'])
