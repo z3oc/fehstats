@@ -2,7 +2,8 @@
 
 import json, argparse, prettytable, requests, html
 
-URL_hmdir = "https://s3.us-east-2.amazonaws.com/gamepress-json/fe/"
+# URL_hmdir = "https://s3.us-east-2.amazonaws.com/gamepress-json/fe/"
+URL_hmdir = "https://fireemblem.gamepress.gg/sites/fireemblem/files/feh-jsons/"
 URL_3star = URL_hmdir + "heroes-3star.json"
 URL_4star = URL_hmdir + "heroes-4star.json"
 URL_5star = URL_hmdir + "heroes-5star.json"
@@ -42,7 +43,7 @@ tmp = ({c.casefold() for c in character_list} & set(other))
 if tmp: character = tmp.pop()
 if not character: exit()
 
-# adjust keys according to rarity
+# adjust keys according to rarity ... their naming patterns are inconsistent
 key_hp = 'field_hp_level_1_middle'
 key_atk = 'field_atk_level_1_middle'
 key_spd = 'field_spd_level_1_middle'
