@@ -2,11 +2,10 @@
 
 import json, argparse, prettytable, requests, html
 
-# URL_hmdir = "https://s3.us-east-2.amazonaws.com/gamepress-json/fe/"
-URL_hmdir = "https://fireemblem.gamepress.gg/sites/fireemblem/files/feh-jsons/"
-URL_3star = URL_hmdir + "heroes-3star.json"
-URL_4star = URL_hmdir + "heroes-4star.json"
-URL_5star = URL_hmdir + "heroes-5star.json"
+URL_hmdir = "https://gamepress.gg/sites/default/files/aggregatedjson/"
+URL_3star = URL_hmdir + "heroes-3star-FEH.json"
+URL_4star = URL_hmdir + "heroes-4star-FEH.json"
+URL_5star = URL_hmdir + "heroes-5star-FEH.json"
 
 # parse args
 parser = argparse.ArgumentParser(description="Collect FEH stats from GamePress")
@@ -23,10 +22,20 @@ for i in range(len(other)):
 # update json files
 if 'update' in other:
     with open(URL_3star[-10:], 'w') as f3, open(URL_4star[-10:], 'w') as f4, open(URL_5star[-10:], 'w') as f5:
-        f3.write(requests.get(URL_3star).text)
-        f4.write(requests.get(URL_4star).text)
-        f5.write(requests.get(URL_5star).text)
-    print('Json files updated.')
+        r3 = requests.get(URL_3star).text
+        r4 = requests.get(URL_4star).text
+        r5 = requests.get(URL_5star).text
+        if r3 and r4 and r5: # check for 4xx and 5xx responses
+            f3.write(r3)
+            f4.write(r4)
+            f5.write(r5)
+            print('Json files updated.')
+        else:
+            print('Update failed. Response codes for each resource:')
+            print(URL_3star, '\nSTATUS: ', r3.status_code)
+            print(URL_4star, '\nSTATUS: ', r4.status_code)
+            print(URL_5star, '\nSTATUS: ', r5.status_code)
+            exit()
 
 # load json file
 jsondata = None
